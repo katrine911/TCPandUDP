@@ -1,30 +1,28 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+
 namespace client
 {
-    class Program
+    class Client
     {
-        static void Main(string[] args) {
+        static void Main(string[] args)
+        {
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp); 
+            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("7.31.197.143"), 1255); 
             while (true) {
-                try {
-                    string filePath = Console.ReadLine();
-                    TcpClient socket = new TcpClient("7.31.197.143", 1255);
-                    NetworkStream nwStream = socket.GetStream();
-                    BinaryReader reader = new BinaryReader(nwStream);
-                    BinaryWriter writer = new BinaryWriter(nwStream);
-                    writer.Write(filePath);
-                    Console.WriteLine(reader.ReadString() + "\n");
-                    socket.Close();
-                }
-                catch (Exception e) { Console.WriteLine(e.Message); }
+                string filePath = Console.ReadLine();
+                byte[] bytes = Encoding.UTF8.GetBytes(filePath);
+                socket.SendTo(bytes, serverEndPoint);
+                byte[] buffer = new byte[1024];
+                int received = socket.Receive(buffer);
+                Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, received) + "\n");
             }
-            Console.ReadKey();
+            socket.Close();
         }
     }
 }
